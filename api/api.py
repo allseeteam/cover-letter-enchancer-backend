@@ -1,15 +1,28 @@
 import sys
 from pathlib import Path
+import os
 
 sys.path.append(str(Path(__file__).resolve().parent.parent))  # noqa: E402
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from yandex_gpt.yandex_gpt import YandexGPT
 
 
 app = FastAPI()
+# noinspection PyTypeChecker
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=os.getenv(
+        'CORS_ORIGINS',
+        'http://localhost:3000'
+    ).split(','),
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
 
 yandex_gpt = YandexGPT(
     yandex_cloud_config_file_path='config/yandex_cloud.yaml',
