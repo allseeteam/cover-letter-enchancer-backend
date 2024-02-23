@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from yandex_gpt.yandex_gpt import YandexGPT
+from yandex_gpt.yandex_gpt_config_manager import YandexGPTConfigManager
 
 
 app = FastAPI()
@@ -25,8 +26,10 @@ app.add_middleware(
 )
 
 yandex_gpt = YandexGPT(
-    yandex_cloud_config_file_path='config/yandex_cloud.yaml',
-    yandex_gpt_key_file_path='keys/yandex_authorization_key.json'
+    config_manager=YandexGPTConfigManager(
+        config_path='config/yandex_cloud.yaml',
+        key_file_path='keys/yandex_authorization_key.json'
+    )
 )
 
 

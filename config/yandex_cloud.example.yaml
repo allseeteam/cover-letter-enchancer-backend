@@ -1,3 +1,4 @@
 ServiceAccountID: 1111111111111
 ServiceAccountKeyID: 11111111111
 CatalogID: 11111111
+IAMURL: https://iam.api.cloud.yandex.net/iam/v1/tokens
