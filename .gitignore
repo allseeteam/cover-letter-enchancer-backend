@@ -3,3 +3,4 @@ venv
 
 keys/yandex_authorization_key.json
 config/yandex_cloud.yaml
+env/.env

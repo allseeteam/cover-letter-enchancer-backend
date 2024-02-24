@@ -1,6 +1,7 @@
 import os
 import jwt
 import time
+import base64
 import requests
 from typing import Any, Dict, Optional
 
@@ -105,7 +106,7 @@ class YandexGPTConfigManager:
     @staticmethod
     def _swap_jwt_to_iam(
             jwt_token: str,
-            url: str = "https://iam.api.cloud.yandex.net/iam/v1/tokens"
+            url: str = 'https://iam.api.cloud.yandex.net/iam/v1/tokens'
     ) -> str:
         headers: Dict[str, str] = {"Content-Type": "application/json"}
         data: Dict[str, str] = {"jwt": jwt_token}
@@ -143,7 +144,9 @@ class YandexGPTConfigManager:
         service_account_id: Optional[str] = os.getenv('SERVICE_ACCOUNT_ID')
         service_account_key_id: Optional[str] = os.getenv('SERVICE_ACCOUNT_KEY_ID')
         catalog_id: Optional[str] = os.getenv('CATALOG_ID')
-        private_key: Optional[str] = os.getenv('PRIVATE_KEY')
+        private_key_base64: Optional[str] = os.getenv('PRIVATE_KEY_BASE64')
+        private_key_bytes: bytes = base64.b64decode(private_key_base64)
+        private_key: str = private_key_bytes.decode('utf-8')
         iam_url: str = os.getenv('IAM_URL', 'https://iam.api.cloud.yandex.net/iam/v1/tokens')
         # checking environment variables
         if not all([service_account_id, service_account_key_id, private_key, catalog_id]):

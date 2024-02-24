@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+from dotenv import load_dotenv
 import os
 
 sys.path.append(str(Path(__file__).resolve().parent.parent))  # noqa: E402
@@ -11,26 +12,20 @@ from pydantic import BaseModel
 from yandex_gpt.yandex_gpt import YandexGPT
 from yandex_gpt.yandex_gpt_config_manager import YandexGPTConfigManager
 
+path_to_env = './env/.env'
+load_dotenv(dotenv_path=path_to_env)
 
 app = FastAPI()
 # noinspection PyTypeChecker
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.getenv(
-        'CORS_ORIGINS',
-        'http://localhost:3000'
-    ).split(','),
+    allow_origins=os.environ.get('CORS_ORIGINS').split(','),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"]
 )
 
-yandex_gpt = YandexGPT(
-    config_manager=YandexGPTConfigManager(
-        config_path='config/yandex_cloud.yaml',
-        key_file_path='keys/yandex_authorization_key.json'
-    )
-)
+yandex_gpt = YandexGPT(config_manager=YandexGPTConfigManager())
 
 
 class LetterData(BaseModel):
