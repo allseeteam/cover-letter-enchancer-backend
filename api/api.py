@@ -1,6 +1,6 @@
-import sys
 from pathlib import Path
-from dotenv import load_dotenv
+import asyncio
+import sys
 import os
 
 sys.path.append(str(Path(__file__).resolve().parent.parent))  # noqa: E402
@@ -12,9 +12,18 @@ from pydantic import BaseModel
 from yandex_gpt.yandex_gpt import YandexGPT
 from yandex_gpt.yandex_gpt_config_manager import YandexGPTConfigManager
 
+from dotenv import load_dotenv
 path_to_env = './env/.env'
 load_dotenv(dotenv_path=path_to_env)
 
+
+class LetterData(BaseModel):
+    letter_template: str
+    resume: str
+    job_description: str
+
+
+# creating app instance
 app = FastAPI()
 # noinspection PyTypeChecker
 app.add_middleware(
@@ -25,13 +34,22 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-yandex_gpt = YandexGPT(config_manager=YandexGPTConfigManager())
+# creating yandex_gpt instance
+yandex_gpt = YandexGPT(config_manager={})
 
 
-class LetterData(BaseModel):
-    letter_template: str
-    resume: str
-    job_description: str
+async def update_yandex_gpt_config():
+    # updating config every 12 hours
+    while True:
+        global yandex_gpt
+        yandex_gpt.config_manager = YandexGPTConfigManager()
+        await asyncio.sleep(43200)
+
+
+# starting routine
+@app.on_event("startup")
+def startup_event():
+    asyncio.create_task(update_yandex_gpt_config())
 
 
 @app.post("/generate_letter/")
@@ -68,11 +86,12 @@ async def generate_letter(data: LetterData):
     ]
 
     try:
-        response = yandex_gpt.send_completion_request(
+        response = await yandex_gpt.send_completion_request(
             messages=messages,
             temperature=0.0
         )
         generated_text = response['result']['alternatives'][0]['message']['text']
         return {"generated_letter": generated_text}
     except Exception as e:
+        print(e)
         raise HTTPException(status_code=500, detail=str(e))
